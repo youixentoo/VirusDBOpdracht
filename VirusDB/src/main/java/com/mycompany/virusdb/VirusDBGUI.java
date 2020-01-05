@@ -9,20 +9,13 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.JFileChooser;
 
-import com.mycompany.virusdb.VirusDBFunctions;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.Vector;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.ListModel;
 
 /**
  *
@@ -52,6 +45,7 @@ public class VirusDBGUI extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         urlTextField = new javax.swing.JTextField();
         urlGoButton = new javax.swing.JButton();
+        errorMessageLabel = new javax.swing.JLabel();
         viralClassLabel = new javax.swing.JLabel();
         viralClassCombo = new javax.swing.JComboBox<>();
         jSeparator1 = new javax.swing.JSeparator();
@@ -109,10 +103,12 @@ public class VirusDBGUI extends javax.swing.JFrame {
                 .addGroup(enterURLDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(urlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
                     .addGroup(enterURLDialogLayout.createSequentialGroup()
-                        .addGroup(enterURLDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(urlGoButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(jLabel2)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(enterURLDialogLayout.createSequentialGroup()
+                        .addComponent(urlGoButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(errorMessageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         enterURLDialogLayout.setVerticalGroup(
@@ -123,7 +119,9 @@ public class VirusDBGUI extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(urlTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(urlGoButton)
+                .addGroup(enterURLDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(urlGoButton)
+                    .addComponent(errorMessageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(39, Short.MAX_VALUE))
         );
 
@@ -167,7 +165,6 @@ public class VirusDBGUI extends javax.swing.JFrame {
         sortingButtonGroup.add(numRadioButton);
         numRadioButton.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         numRadioButton.setText("Number of hosts");
-        numRadioButton.setEnabled(false);
         numRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 numRadioButtonActionPerformed(evt);
@@ -309,8 +306,10 @@ public class VirusDBGUI extends javax.swing.JFrame {
                 .addComponent(interesectLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(50, Short.MAX_VALUE))
         );
+
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jScrollPane1, jScrollPane2, jScrollPane3});
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -383,41 +382,66 @@ public class VirusDBGUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_urlTextFieldKeyPressed
 
+    /**
+     *
+     *
+     */
     private void loadDataMain(boolean url, InputStreamReader isp) {
+        List<VirusObject> virusListInt;
         if (url) {
-            virusList = VirusDBFunctions.processTSVFile(isp);
+            virusListInt = VirusDBFunctions.processTSVFile(isp);
         } else {
-            fileOpening();
+            virusListInt = fileOpening();
         }
 
-        setViralClassComboItems();
-        setHostComboItems("Any");
-        hostVirusses = VirusDBFunctions.getHostVirusMap(virusList);
-        virusList = VirusDBFunctions.setNumOfHosts(virusList, hostVirusses);
+        if (virusListInt == null || virusListInt.isEmpty()) {
+            System.out.println("some sort of error");
+        } else {
+            setViralClassComboItems(virusListInt);
+            setHostComboItems(virusListInt, "Any");
+            hostVirusses = VirusDBFunctions.getHostVirusMap(virusListInt);
+            virusList = VirusDBFunctions.setNumOfHosts(virusListInt, hostVirusses);
 
-        hostComboOption("Box1");
-        hostComboOption("Box2");
+            hostComboOption("Box1");
+            hostComboOption("Box2");
 
-        setIntersection();
+            setIntersection();
 
-        System.out.println(virusList.get(0).getHosts());
+            loadingData = false;
+        }
 
-        loadingData = false;
     }
 
+    /**
+     *
+     *
+     */
     private void urlMain() {
         String url = urlTextField.getText();
+        errorMessageLabel.setText("");
+
+        boolean noError = true;
         try {
+            errorMessageLabel.setText("Loading. Please wait.");
             URL website = new URL(url);
             InputStreamReader inputRead = new InputStreamReader(website.openStream());
             loadDataMain(true, inputRead);
+            noError = true;
         } catch (IOException exc) {
-            System.out.println(exc);
+            errorMessageLabel.setText("There was a problem with the url.");
+            noError = false;
         }
-        
-        enterURLDialog.setVisible(false);
+
+        if (noError) {
+            enterURLDialog.setVisible(false);
+        }
+
     }
 
+    /**
+     *
+     *
+     */
     private void hostComboOption(String option) {
         if (option.equals("Box1")) {
             int hostID = Integer.parseInt(hostCombo1.getSelectedItem().toString().split(";")[0]);
@@ -434,6 +458,10 @@ public class VirusDBGUI extends javax.swing.JFrame {
         }
     }
 
+    /**
+     *
+     *
+     */
     private void setJListData(List<VirusObject> sortedList, String option) {
         String[] listData = VirusDBFunctions.convertVirusObjecttoStringArray(sortedList);
 
@@ -446,6 +474,10 @@ public class VirusDBGUI extends javax.swing.JFrame {
         }
     }
 
+    /**
+     *
+     *
+     */
     private void setJListDataInter(List<Integer> sortedList, String option) {
         String[] listData = sortedList.stream().map(num -> num.toString()).toArray(String[]::new);
 
@@ -458,16 +490,24 @@ public class VirusDBGUI extends javax.swing.JFrame {
         }
     }
 
+    /**
+     *
+     *
+     */
     private void viralClassComboSelection() {
         loadingData = true;
         String choice = viralClassCombo.getSelectedItem().toString();
-        setHostComboItems(choice);
+        setHostComboItems(virusList, choice);
         loadingData = false;
     }
 
-    private void setViralClassComboItems() {
+    /**
+     *
+     *
+     */
+    private void setViralClassComboItems(List<VirusObject> virusListInt) {
         viralClassCombo.removeAllItems();
-        List<String> virusClasses = VirusDBFunctions.getVirusClasses(virusList);
+        List<String> virusClasses = VirusDBFunctions.getVirusClasses(virusListInt);
         Collections.sort(virusClasses);
 
         viralClassCombo.addItem("Any");
@@ -476,11 +516,15 @@ public class VirusDBGUI extends javax.swing.JFrame {
         }
     }
 
-    private void setHostComboItems(String option) {
+    /**
+     *
+     *
+     */
+    private void setHostComboItems(List<VirusObject> virusListInt, String option) {
         hostCombo1.removeAllItems();
         hostCombo2.removeAllItems();
 
-        Map<Integer, String> hostsMap = VirusDBFunctions.getHostComboItems(virusList, option);
+        Map<Integer, String> hostsMap = VirusDBFunctions.getHostComboItems(virusListInt, option);
 
         SortedSet<Integer> hostsSet = new TreeSet<>(hostsMap.keySet());
 
@@ -493,31 +537,59 @@ public class VirusDBGUI extends javax.swing.JFrame {
 
     }
 
-    private void fileOpening() {
+    /**
+     *
+     *
+     */
+    private List<VirusObject> fileOpening() {
         int returnVal = fileChooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             try {
                 // What to do with the file
-                virusList = VirusDBFunctions.processTSVFile(file);
+                return VirusDBFunctions.processTSVFile(file);
             } catch (Exception ex) {
                 System.out.println(String.format("fileopening: %s", ex));
+                return null;
             }
         } else {
             System.out.println("File access cancelled by user.");
         }
+        return null;
     }
 
+    /**
+     * 
+     *  
+     */
     private void jListProcessing(String option) {
+
+        String listValue;
+
         if (option.equals("List1")) {
-            System.out.println(hostList1.getSelectedValue());
-        } else if (option.equals("list2")) {
-            System.out.println(hostList2.getSelectedValue());
-        } else if (option.equals("Intersect")) {
-            System.out.println(intersectList.getSelectedValue());
+            listValue = hostList1.getSelectedValue();
+        } else if (option.equals("List2")) {
+            listValue = hostList2.getSelectedValue();
+        } else {
+            listValue = intersectList.getSelectedValue();
         }
+
+        String url = String.format("https://www.genome.jp/virushostdb/%s", listValue);
+
+        if (runs > 0) {
+            webPageVisual.showWebPage(url, "VirusDB Web Interface", false);
+        } else {
+            webPageVisual.showWebPage(url, "VirusDB Web Interface", true);
+        }
+
+        runs++;
+
     }
 
+    /**
+     *
+     *
+     */
     private void setRadioOption(String option) {
         loadingData = true;
         radioOption = option;
@@ -527,6 +599,10 @@ public class VirusDBGUI extends javax.swing.JFrame {
 
     }
 
+    /**
+     *
+     *
+     */
     private void sortRadioOptions(String option) {
         List<VirusObject> sortedList1 = VirusDBFunctions.getSortedVirusIDs(hostVirusList1, option);
         setJListData(sortedList1, "L1");
@@ -539,6 +615,10 @@ public class VirusDBGUI extends javax.swing.JFrame {
         setJListDataInter(intersectData, "Intersect");
     }
 
+    /**
+     *
+     *
+     */
     private void setIntersection() {
         List<Integer> intersectData = VirusDBFunctions.getIntersection(hostVirusList1, hostVirusList2);
         //Collections.sort(intersectData);
@@ -575,15 +655,31 @@ public class VirusDBGUI extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new VirusDBGUI().setVisible(true);
+                virusGUI = new VirusDBGUI();
+                virusGUI.setVisible(true);
             }
         });
+    }
+
+    /**
+     *
+     */
+    protected static void resetRuns() {
+        virusGUI.resRuns();
+    }
+
+    /**
+     *
+     */
+    private void resRuns() {
+        runs = 0;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton IdRadioButton;
     private javax.swing.JRadioButton classRadioButton;
     private javax.swing.JDialog enterURLDialog;
+    private javax.swing.JLabel errorMessageLabel;
     private javax.swing.JFileChooser fileChooser;
     private javax.swing.JMenuItem fromURLMenu;
     private javax.swing.JComboBox<String> hostCombo1;
@@ -619,5 +715,8 @@ public class VirusDBGUI extends javax.swing.JFrame {
     private List<VirusObject> hostVirusList2;
 
     private boolean loadingData = true;
+
+    private int runs = 0;
+    private static VirusDBGUI virusGUI;
 
 }
