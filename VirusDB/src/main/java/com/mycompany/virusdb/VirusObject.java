@@ -9,15 +9,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * [114871, Zygosaccharomyces bailii virus Z, Viruses; Riboviria; Amalgaviridae;
- * Zybavirus, NC_003874, null, null, null, 4954, Zygosaccharomyces bailii,
- * Eukaryota; Fungi; Dikarya; Ascomycota; Saccharomycotina; Saccharomycetes;
- * Saccharomycetales; Saccharomycetaceae; Zygosaccharomyces, null, Literature,
- * null, null]
  *
  * @author gebruiker
  */
-public class VirusObject implements Comparable<VirusObject> {
+public class VirusObject{
 
     private int virusTaxID;
     private String virusName;
@@ -33,11 +28,29 @@ public class VirusObject implements Comparable<VirusObject> {
     private String evidence;
     private String classification;
     private int numOfHosts = 0;
-    private Set<Integer> hosts;
 
+    /**
+     *
+     */
     public VirusObject() {
     }
 
+    /**
+     *
+     * @param virusTaxID
+     * @param virusName
+     * @param virusLineage
+     * @param refSeqID
+     * @param KEGGGenome
+     * @param KEGGDisease
+     * @param disease
+     * @param hostTaxID
+     * @param hostName
+     * @param hostLineage
+     * @param pmid
+     * @param evidence
+     * @param classification
+     */
     public VirusObject(int virusTaxID, String virusName, String virusLineage, String refSeqID, String KEGGGenome, String KEGGDisease, String disease, int hostTaxID, String hostName, String hostLineage, String pmid, String evidence, String classification) {
         this.virusTaxID = virusTaxID;
         this.virusName = virusName;
@@ -52,9 +65,12 @@ public class VirusObject implements Comparable<VirusObject> {
         this.pmid = pmid;
         this.evidence = evidence;
         this.classification = classification;
-        this.hosts = new HashSet<>();
     }
 
+    /**
+     *
+     * @param row
+     */
     public VirusObject(String[] row) {
         this.virusTaxID = Integer.parseInt(row[0]);
         this.virusName = row[1];
@@ -68,7 +84,6 @@ public class VirusObject implements Comparable<VirusObject> {
         this.hostLineage = row[9];
         this.pmid = row[10];
         this.evidence = row[11];
-        this.hosts = new HashSet<>();
 
         setClassification();
     }
@@ -109,80 +124,130 @@ public class VirusObject implements Comparable<VirusObject> {
         }
     }
     
-    public void addToHosts(Integer hostID){
-        this.hosts.add(hostID);
-    }
-    
+    /**
+     *
+     * @param amount
+     */
     public void setNumOfHosts(int amount){
         this.numOfHosts = amount;
     }
-    
-    public void increaseNumOfHosts(){
-        this.numOfHosts += 1;
-    }
 
+    /**
+     *
+     * @return
+     */
     public int getVirusTaxID() {
         return virusTaxID;
     }
-
+    
+    /**
+     *
+     * @return
+     */
     public String getVirusName() {
         return virusName;
     }
-
+    
+    /**
+     *
+     * @return
+     */
     public String getVirusLineage() {
         return virusLineage;
     }
-
+    
+    /**
+     *
+     * @return
+     */
     public String getRefSeqID() {
         return refSeqID;
     }
-
+    
+    /**
+     *
+     * @return
+     */
     public String getKEGGGenome() {
         return KEGGGenome;
     }
-
+    
+    /**
+     *
+     * @return
+     */
     public String getKEGGDisease() {
         return KEGGDisease;
     }
-
+    
+    /**
+     *
+     * @return
+     */
     public String getDisease() {
         return disease;
     }
-
+    
+    /**
+     *
+     * @return
+     */
     public int getHostTaxID() {
         return hostTaxID;
     }
-
+    
+    /**
+     *
+     * @return
+     */
     public String getHostName() {
         return hostName;
     }
-
+    
+    /**
+     *
+     * @return
+     */
     public String getHostLineage() {
         return hostLineage;
     }
-
+    
+    /**
+     *
+     * @return
+     */
     public String getPmid() {
         return pmid;
     }
-
+    
+    /**
+     *
+     * @return
+     */
     public String getEvidence() {
         return evidence;
     }
-
+    
+    /**
+     *
+     * @return
+     */
     public String getClassification() {
         return classification;
     }
-
+    
+    /**
+     *
+     * @return
+     */
     public int getNumOfHosts() {
         return numOfHosts;
     }
-
-    public Set<Integer> getHosts() {
-        return hosts;
-    }
     
-    
-
+    /**
+     *
+     * @return
+     */
     public String getHostIDandName() {
         return String.format("%s; (%s)", this.hostTaxID, this.hostName);
     }
@@ -191,10 +256,4 @@ public class VirusObject implements Comparable<VirusObject> {
     public String toString() {
         return String.valueOf(this.virusTaxID);
     }
-
-    @Override
-    public int compareTo(VirusObject o) {
-        return this.classification.compareTo(o.classification);
-    }
-
 }
