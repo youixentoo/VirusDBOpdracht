@@ -36,15 +36,18 @@ import javax.swing.ListModel;
  */
 public class VirusDBFunctions {
 
-    public static List<VirusObject> processTSVFile(File file) throws FileNotFoundException {
+    /**
+     *
+     * @param file
+     * @return
+     */
+    public static List<VirusObject> processTSVFile(File file){
         TsvParserSettings settings = new TsvParserSettings();
         List<VirusObject> virusList = new ArrayList<>();
 
         ObjectRowProcessor rowProcessor = new ObjectRowProcessor() {
             @Override
             public void rowProcessed(Object[] row, ParsingContext context) {
-                //here is the row. Let's just print it.
-                //System.out.println(Arrays.toString(row));
 
                 // Casting to String[] doesnt work
                 String[] stringRow = Arrays.copyOf(row, row.length, String[].class);
@@ -52,7 +55,6 @@ public class VirusDBFunctions {
                 try {
                     virusList.add(new VirusObject(stringRow));
                 } catch (Exception exc) {
-                    //System.out.println(exc);
                 }
             }
         };
@@ -66,6 +68,11 @@ public class VirusDBFunctions {
         return virusList;
     }
     
+    /**
+     *
+     * @param isp
+     * @return
+     */
     public static List<VirusObject> processTSVFile(InputStreamReader isp) {
         TsvParserSettings settings = new TsvParserSettings();
         List<VirusObject> virusList = new ArrayList<>();
@@ -73,8 +80,6 @@ public class VirusDBFunctions {
         ObjectRowProcessor rowProcessor = new ObjectRowProcessor() {
             @Override
             public void rowProcessed(Object[] row, ParsingContext context) {
-                //here is the row. Let's just print it.
-                //System.out.println(Arrays.toString(row));
 
                 // Casting to String[] doesnt work
                 String[] stringRow = Arrays.copyOf(row, row.length, String[].class);
@@ -82,7 +87,6 @@ public class VirusDBFunctions {
                 try {
                     virusList.add(new VirusObject(stringRow));
                 } catch (Exception exc) {
-                    //System.out.println(exc);
                 }
             }
         };
@@ -96,6 +100,11 @@ public class VirusDBFunctions {
         return virusList;
     }
 
+    /**
+     *
+     * @param virusList
+     * @return
+     */
     public static List<String> getVirusClasses(List<VirusObject> virusList) {
         Set virusClasses = new HashSet();
         for (VirusObject virus : virusList) {
@@ -105,6 +114,12 @@ public class VirusDBFunctions {
         return new ArrayList<>(virusClasses);
     }
 
+    /**
+     *
+     * @param virusList
+     * @param option
+     * @return
+     */
     public static Map<Integer, String> getHostComboItems(List<VirusObject> virusList, String option) {
         Map<Integer, String> hostIDandName = new HashMap<>();
 
@@ -123,6 +138,11 @@ public class VirusDBFunctions {
         return hostIDandName;
     }
 
+    /**
+     *
+     * @param virusList
+     * @return
+     */
     public static Map<Integer, List<VirusObject>> getHostVirusMap(List<VirusObject> virusList) {
         Map<Integer, List<VirusObject>> hostVirusMap = new HashMap<>();
 
@@ -142,18 +162,35 @@ public class VirusDBFunctions {
         return hostVirusMap;
     }
 
+    /**
+     *
+     * @param hostVirusMap
+     * @param hostID
+     * @return
+     */
     public static List<VirusObject> getHostVirusIDs(Map<Integer, List<VirusObject>> hostVirusMap, int hostID) {
         List<VirusObject> hostVirusList = hostVirusMap.get(hostID);
 
         return hostVirusList;
     }
 
+    /**
+     *
+     * @param hostVirusList
+     * @return
+     */
     public static String[] convertVirusObjecttoStringArray(List<VirusObject> hostVirusList) {
         //https://stackoverflow.com/questions/4581407/how-can-i-convert-arraylistobject-to-arrayliststring
         List<String> hostVirusses = hostVirusList.stream().map(virus -> virus.toString()).collect(Collectors.toList());
         return hostVirusses.stream().toArray(String[]::new);
     }
 
+    /**
+     *
+     * @param hostVirusses
+     * @param option
+     * @return
+     */
     public static List<VirusObject> getSortedVirusIDs(List<VirusObject> hostVirusses, String option) {
 
         if (option.equals("NUM")) {
@@ -167,66 +204,32 @@ public class VirusDBFunctions {
         return hostVirusses;
     }
 
+    /**
+     *
+     * @param virusList
+     * @param hostVirusses
+     * @return
+     */
     public static List<VirusObject> setNumOfHosts(List<VirusObject> virusList, Map<Integer, List<VirusObject>> hostVirusses) {
-
-        Map<VirusObject, Integer> hostCounts = new HashMap<>();
-
+        // Duplicate of VirusTaxID in list == has another host.
         
-
-
-        //System.out.println(hostVirusses.keySet());
-//        int trues = 0;
-//        int falses = 0;
-//
-//        for (VirusObject virus : virusList) {
-//            if (hostVirusses.containsKey(virus.getHostTaxID())) {
-//                virus.increaseNumOfHosts();
-//                System.out.println(hostVirusses.containsKey(virus.getHostTaxID()));
-//                System.out.println(virus.getHostTaxID());
-//            }
-//        }
-//        for(int key:hostVirusses.keySet()){
-//            for(VirusObject virus:virusList){
-//                if(findInVirusList(hostVirusses.get(key), virus)){
-//                    virus.addToHosts(key);
-//                    trues++;
-//                }else{
-//                    falses++;
-//                }
-//            }
-//        }
-//        for(VirusObject virus:virusList){
-//            for(int key:hostVirusses.keySet()){
-//                if(findInVirusList(hostVirusses.get(key), virus)){
-//                    virus.increaseNumOfHosts();
-//                    trues++;
-//                }else{
-//                    falses++;
-//                }
-//            }
-//        }
-//        System.out.println(hostVirusses.keySet().size());
-//        System.out.println(trues);
-//        System.out.println(falses);
-//        System.out.println(virusList.size());
-//        for (VirusObject virus : virusList) {
-//            System.out.println(virus.getNumOfHosts());
-//        }
+        Map<Integer, Long> hostCounts = virusList.stream().collect(Collectors.groupingBy(virus -> virus.getVirusTaxID(), Collectors.counting()));
+        
+        for(VirusObject virus:virusList){
+            Long tempNumOfHosts = hostCounts.get(virus.getVirusTaxID());
+            virus.setNumOfHosts(tempNumOfHosts.intValue());
+        }
+        
         return virusList;
 
     }
 
-    private static boolean findInVirusList(List<VirusObject> listVirus, VirusObject virus) {
-        for (VirusObject v : listVirus) {
-            if (v.getHostTaxID() == virus.getHostTaxID()) {
-                return true;
-            }
-        }
-        return false;
-
-        //return listVirus.stream().filter(o -> o.getHostTaxID() == virus.getHostTaxID()).findFirst().isPresent();
-    }
-
+    /**
+     *
+     * @param list1Data
+     * @param list2Data
+     * @return
+     */
     public static List<Integer> getIntersection(List<VirusObject> list1Data, List<VirusObject> list2Data) {
         Set<Integer> set1Data = new LinkedHashSet<>(list1Data.stream().map(virus -> virus.getVirusTaxID()).collect(Collectors.toList()));
         Set<Integer> set2Data = new LinkedHashSet<>(list2Data.stream().map(virus -> virus.getVirusTaxID()).collect(Collectors.toList()));
