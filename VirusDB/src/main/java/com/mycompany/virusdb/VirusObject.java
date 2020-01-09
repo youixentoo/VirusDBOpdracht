@@ -5,9 +5,6 @@
  */
 package com.mycompany.virusdb;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  *
  * @author gebruiker
